@@ -4,7 +4,6 @@ import (
 	"github.com/takuji/memcached/protocol"
 	"log"
 	"net"
-	"strings"
 	"time"
 )
 
@@ -12,29 +11,9 @@ var (
 	data map[string]*Item = make(map[string]*Item)
 )
 
-func init() {
-	log.Printf("%+v", data)
-}
-
 type Item struct {
 	Value     string
 	CreatedAt time.Time
-}
-
-type Command struct {
-	key string
-}
-
-func newCommand(s string) (*Command, error) {
-	println(s)
-	elms := strings.Split(s, " ")
-	command := new(Command)
-	command.key = elms[0]
-	return command, nil
-}
-
-func (c *Command) handle(s string) {
-	println(s)
 }
 
 func handleConnection(conn net.Conn) {
