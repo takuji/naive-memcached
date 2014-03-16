@@ -14,11 +14,13 @@ import (
 var (
 	commandPattern    *regexp.Regexp
 	setCommandPattern *regexp.Regexp
+	getCommandPattern *regexp.Regexp
 )
 
 func init() {
 	commandPattern = regexp.MustCompile(`\A\S+`)
 	setCommandPattern = regexp.MustCompile(`\A(\S+) (\S+) (\S+) (\S+) (\S+)( (\S+))?\r\n(.+)\r\n`)
+	getCommandPattern = regexp.MustCompile(`\A(\S+) (\S+)\r\n`)
 }
 
 type RequestReader struct {
@@ -38,6 +40,11 @@ type SetRequest struct {
 	Bytes   int
 	Noreply int
 	Data    string
+}
+
+type GetRequest struct {
+	Command string
+	Key     string
 }
 
 //
@@ -76,16 +83,16 @@ func (r *RequestReader) MakeRequest() (Request, error) {
 	r.buffer.Reset()
 	command := commandPattern.FindString(s)
 	if command == "set" {
-		return makeSetRequest(s)
+		return newSetRequest(s)
 	} else if command == "get" {
-
+		return newGetRequest(s)
 	} else {
 
 	}
 	return nil, nil
 }
 
-func makeSetRequest(s string) (Request, error) {
+func newSetRequest(s string) (Request, error) {
 	elms := setCommandPattern.FindStringSubmatch(s)
 	if elms == nil {
 		return nil, errors.New("Bad format request")
@@ -117,6 +124,18 @@ func makeSetRequest(s string) (Request, error) {
 		Bytes:   bytes,
 		Noreply: noreply,
 		Data:    elms[8],
+	}
+	return req, nil
+}
+
+func newGetRequest(s string) (Request, error) {
+	elms := getCommandPattern.FindStringSubmatch(s)
+	if elms == nil {
+		return nil, errors.New("Bad format request")
+	}
+	req := &GetRequest{
+		Command: "get",
+		Key:     elms[2],
 	}
 	return req, nil
 }

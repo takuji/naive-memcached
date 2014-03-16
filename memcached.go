@@ -52,6 +52,11 @@ func handleConnection(conn net.Conn) {
 			log.Println(r.Key)
 			data[r.Key] = &Item{Value: r.Data, CreatedAt: time.Now()}
 			log.Printf("Current items: %+v", len(data))
+		case *protocol.GetRequest:
+			log.Println("GetRequest!")
+			log.Println(r.Key)
+			item := data[r.Key]
+			conn.Write([]byte(item.Value))
 		default:
 			log.Println("???")
 		}
