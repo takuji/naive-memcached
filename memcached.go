@@ -5,7 +5,21 @@ import (
 	"log"
 	"net"
 	"strings"
+	"time"
 )
+
+var (
+	data map[string]*Item = make(map[string]*Item)
+)
+
+func init() {
+	log.Printf("%+v", data)
+}
+
+type Item struct {
+	Value     string
+	CreatedAt time.Time
+}
 
 type Command struct {
 	key string
@@ -25,13 +39,22 @@ func (c *Command) handle(s string) {
 
 func handleConnection(conn net.Conn) {
 	r := protocol.NewRequestReader(conn)
-
 	for {
 		req, err := r.Read()
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			continue
 		}
 		log.Printf("%+v", req)
+		switch r := req.(type) {
+		case *protocol.SetRequest:
+			log.Println("SetRequest!")
+			log.Println(r.Key)
+			data[r.Key] = &Item{Value: r.Data, CreatedAt: time.Now()}
+			log.Printf("Current items: %+v", len(data))
+		default:
+			log.Println("???")
+		}
 	}
 }
 

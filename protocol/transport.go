@@ -102,9 +102,12 @@ func makeSetRequest(s string) (Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	noreply, err := strconv.Atoi(elms[7])
-	if err != nil {
-		return nil, err
+	var noreply int
+	if len(elms[7]) > 0 {
+		noreply, err = strconv.Atoi(elms[7])
+		if err != nil {
+			return nil, err
+		}
 	}
 	req := &SetRequest{
 		Command: "set",
